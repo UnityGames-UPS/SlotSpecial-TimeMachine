@@ -49,8 +49,11 @@ mergeInto(LibraryManager.library, {
             }
           });
         }
+<<<<<<< HEAD
       window.parent.dispatchReactUnityEvent(message);
       //window.parent.postMessage(message, "*");
+=======
+>>>>>>> 6d08754 (B2B changes)
       }
     },
 
