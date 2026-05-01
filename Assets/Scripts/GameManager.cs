@@ -369,16 +369,9 @@ public class GameManager : MonoBehaviour
   IEnumerator OnSpinEnd()
   {
     audioController.StopSpinAudio();
-    if (socketController.socketModel.resultGameData.symbolsToEmit.Count > 0)
-    {
-      audioController.PlayWLAudio("electric");
-      slotManager.StartIconAnimation(socketController.socketModel.resultGameData.symbolsToEmit);
-      yield return new WaitForSeconds(1.5f);
-      audioController.StopWLAaudio();
-    }
-
-    uIManager.UpdatePlayerInfo(socketController.socketModel.playerData, socketController.socketModel.resultGameData.payload);
-
+    
+    // CRITICAL FIX: Resize matrix BEFORE animation if level-up occurs
+    // This ensures winning positions exist in the visual matrix
     if (!isFreeSpin)
     {
       specialSpin = socketController.socketModel.resultGameData.features.freeSpin.isLevelUp;
@@ -401,6 +394,17 @@ public class GameManager : MonoBehaviour
         }
       }
     }
+    
+    // NOW it's safe to animate - the matrix has been resized if needed
+    if (socketController.socketModel.resultGameData.symbolsToEmit.Count > 0)
+    {
+      audioController.PlayWLAudio("electric");
+      slotManager.StartIconAnimation(socketController.socketModel.resultGameData.symbolsToEmit);
+      yield return new WaitForSeconds(1.5f);
+      audioController.StopWLAaudio();
+    }
+
+    uIManager.UpdatePlayerInfo(socketController.socketModel.playerData, socketController.socketModel.resultGameData.payload);
     if (socketController.socketModel.resultGameData.payload.winAmount > 0)
     {
       winAnimComplete = false;

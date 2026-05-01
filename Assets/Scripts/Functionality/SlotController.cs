@@ -231,9 +231,22 @@ public class SlotController : MonoBehaviour
     for (int j = 0; j < iconPos.Count; j++)
     {
       int[] pos = iconPos[j].Split(',').Select(int.Parse).ToArray();
-      // Debug.Log("pos[0]:" + pos[0] + " pos[1]:" + pos[1]);
-      // Debug.Log(((4 - level) + pos[1]).ToString());
-      SlotIconView tempIcon = slotMatrix[pos[0]].slotImages[(4 - level) + pos[1]];
+      
+      // Defensive bounds checking
+      if (pos[0] < 0 || pos[0] >= slotMatrix.Count)
+      {
+        Debug.LogWarning($"Invalid column index {pos[0]} for position {iconPos[j]}. Skipping animation.");
+        continue;
+      }
+      
+      int rowIndex = (4 - level) + pos[1];
+      if (rowIndex < 0 || rowIndex >= slotMatrix[pos[0]].slotImages.Count)
+      {
+        Debug.LogWarning($"Invalid row index {rowIndex} (calculated from level={level}, pos[1]={pos[1]}) for position {iconPos[j]}. Skipping animation.");
+        continue;
+      }
+      
+      SlotIconView tempIcon = slotMatrix[pos[0]].slotImages[rowIndex];
       if (tempIcon.id == 10)
         tempIcon.StartAnim(wildAnimSprite);
       else if (tempIcon.id == 9)
