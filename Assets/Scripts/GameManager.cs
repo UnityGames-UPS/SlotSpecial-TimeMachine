@@ -191,7 +191,7 @@ public class GameManager : MonoBehaviour
     if (autoSpinLeft > 0)
     {
       ExecuteAutoSpin(autoSpinLeft);
-      uIManager.ClosePopup();
+      uIManager.CloseNonPersistentPopup();
     }
     else
     {
@@ -321,7 +321,7 @@ public class GameManager : MonoBehaviour
       return false;
     }
     ToggleButtonGrp(false);
-    uIManager.ClosePopup();
+    uIManager.CloseNonPersistentPopup();
     return true;
   }
 
@@ -432,7 +432,7 @@ public class GameManager : MonoBehaviour
     if (AutoSpinPopup_Button) AutoSpinPopup_Button.interactable = toggle;
     if (ToatlBetMinus_Button) ToatlBetMinus_Button.interactable = toggle;
     if (TotalBetPlus_Button) TotalBetPlus_Button.interactable = toggle;
-    uIManager.Settings_Button.interactable = toggle;
+    //uIManager.Settings_Button.interactable = toggle;
   }
 
   private void OnBetChange(bool inc)

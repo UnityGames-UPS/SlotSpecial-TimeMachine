@@ -237,6 +237,19 @@ public class UIManager : MonoBehaviour
     currentPopup = Popup;
   }
 
+  /// <summary>
+  /// Closes the current popup only if it is NOT a persistent informational popup
+  /// (pay table or settings). Used during spin start so players can keep these open.
+  /// </summary>
+  internal void CloseNonPersistentPopup()
+  {
+    if (currentPopup == null) return;
+    // Don't close pay table or settings — player opened them intentionally
+    if (currentPopup == payTablePopup_Object || currentPopup == SettingsPopup_Object)
+      return;
+    ClosePopup();
+  }
+
   internal void ClosePopup(GameObject popup = null)
   {
     if (popup != null)

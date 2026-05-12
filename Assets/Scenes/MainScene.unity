@@ -8331,7 +8331,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isResultdone: 0
-  TestToken: 181a81dd86fe45188faabecafb931885
+  TestToken: 943f1061f8be40ef869a59cf2fee5e12
   JSManager: {fileID: 123995748}
   uiManager: {fileID: 377874625}
   RaycastBlocker: {fileID: 1144861911}
@@ -11702,7 +11702,7 @@ MonoBehaviour:
     m_HighlightedSprite: {fileID: 866302035, guid: b967dfe982a73476f96d730219ce82b1, type: 3}
     m_PressedSprite: {fileID: 171062700, guid: b967dfe982a73476f96d730219ce82b1, type: 3}
     m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 171062700, guid: b967dfe982a73476f96d730219ce82b1, type: 3}
   m_AnimationTriggers:
     m_NormalTrigger: Normal
     m_HighlightedTrigger: Normal
@@ -38806,7 +38806,7 @@ MonoBehaviour:
   audioPlayer_button: {fileID: 8161384201886867057}
   audioPlayer_spin_stop: {fileID: 8161384201886867058}
   sidebar_sound: {fileID: 8161384201886867059}
-  SpinButtonClip: {fileID: 8300000, guid: 5120c83f2c97443a8bf761c52a8a4fb8, type: 3}
+  SpinButtonClip: {fileID: 8300000, guid: 02ec9a598e6ca4b50b2b2004f92b6c2f, type: 3}
   SpinStopClip: {fileID: 8300000, guid: 02ec9a598e6ca4b50b2b2004f92b6c2f, type: 3}
   Button: {fileID: 8300000, guid: bae23a50631d9440296dd69f4aea1233, type: 3}
   SmallWin_Audio: {fileID: 8300000, guid: 07b9a287bec714bc6b677db0f96b660f, type: 3}

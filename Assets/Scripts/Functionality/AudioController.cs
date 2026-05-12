@@ -57,19 +57,31 @@ public class AudioController : MonoBehaviour
 
   private void OnApplicationFocus(bool focus)
   {
-    if (!focus)
+    HandleAudioFocus(focus);
+  }
+
+  private void OnApplicationPause(bool pause)
+  {
+    HandleAudioFocus(!pause);
+  }
+
+  private void HandleAudioFocus(bool hasFocus)
+  {
+    if (!hasFocus)
     {
       bg_adudio.Pause();
-      audioPlayer_wl.Pause();
-      audioPlayer_button.Pause();
-      audioPlayer_spin_stop.Pause();
+      audioPlayer_wl.volume = 0f;
+      audioPlayer_button.volume = 0f;
+      audioPlayer_spin_stop.volume = 0f;
+      sidebar_sound.volume = 0f;
     }
     else
     {
       bg_adudio.UnPause();
-      audioPlayer_wl.UnPause();
-      audioPlayer_button.UnPause();
-      audioPlayer_spin_stop.UnPause();
+      audioPlayer_wl.volume = 1f;
+      audioPlayer_button.volume = 1f;
+      audioPlayer_spin_stop.volume = 1f;
+      sidebar_sound.volume = 1f;
     }
   }
 
