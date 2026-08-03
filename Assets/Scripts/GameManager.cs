@@ -55,6 +55,27 @@ public class GameManager : MonoBehaviour
   static internal bool winAnimComplete = false;
   private Coroutine winPopUpRoutine;
   private int autoSpinLeft;
+
+  private void Awake()
+  {
+    JSManager?.RegisterVisibilityListener(gameObject.name);
+  }
+
+  public void OnFocusChanged(string value)
+  {
+    bool focused = value == "1";
+    Debug.Log("UNITY FOCUS CHANGED: " + value + " (focused: " + focused + ")");
+    audioController?.SetMuteAll(!focused);
+    socketController?.HandleFocusChange(focused);
+  }
+
+  private void SetBalanceFromSync(double balance)
+  {
+    currentBalance = balance;
+    uIManager.UpdatePlayerInfo(socketController.socketModel.playerData);
+    if (currentBalance < currentTotalBet) uIManager.LowBalPopup();
+  }
+
   void Start()
   {
     SetButton(SlotStart_Button, ExecuteSpin);
@@ -74,6 +95,7 @@ public class GameManager : MonoBehaviour
     autoSpinCounter = 0;
     slotManager.shuffleInitialMatrix();
     socketController.OnInit = InitGame;
+    socketController.OnBalanceSync = SetBalanceFromSync;
     uIManager.ToggleAudio = audioController.ToggleMute;
     uIManager.playButtonAudio = audioController.PlayButtonAudio;
     uIManager.OnExit = () => StartCoroutine(socketController.CloseSocket());

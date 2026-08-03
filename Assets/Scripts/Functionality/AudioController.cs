@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioController : MonoBehaviour
@@ -7,6 +8,10 @@ public class AudioController : MonoBehaviour
   [SerializeField] private AudioSource audioPlayer_button;
   [SerializeField] private AudioSource audioPlayer_spin_stop;
   [SerializeField] private AudioSource sidebar_sound;
+
+  private bool isForceMuted;
+  private List<AudioSource> allSources;
+  private readonly Dictionary<AudioSource, bool> preFocusMuteState = new();
 
   [Header("clips")]
   [SerializeField] private AudioClip SpinButtonClip;
@@ -21,6 +26,7 @@ public class AudioController : MonoBehaviour
 
   private void Awake()
   {
+    allSources = new List<AudioSource> { bg_adudio, audioPlayer_wl, audioPlayer_button, audioPlayer_spin_stop, sidebar_sound };
     sidebar_sound.clip = sizeup_audio;
     PlayBgAudio();
   }
@@ -57,31 +63,33 @@ public class AudioController : MonoBehaviour
 
   private void OnApplicationFocus(bool focus)
   {
-    HandleAudioFocus(focus);
+    SetMuteAll(!focus);
   }
 
   private void OnApplicationPause(bool pause)
   {
-    HandleAudioFocus(!pause);
+    SetMuteAll(pause);
   }
 
-  private void HandleAudioFocus(bool hasFocus)
+  // Focus-driven mute — called from both OnApplicationFocus (native) and GameManager.OnFocusChanged (WebGL/JS).
+  // Reentrancy-guarded so a duplicate call for the same direction can't clobber the captured restore state.
+  internal void SetMuteAll(bool forceMute)
   {
-    if (!hasFocus)
+    if (forceMute == isForceMuted) return;
+    isForceMuted = forceMute;
+
+    foreach (var source in allSources)
     {
-      bg_adudio.Pause();
-      audioPlayer_wl.volume = 0f;
-      audioPlayer_button.volume = 0f;
-      audioPlayer_spin_stop.volume = 0f;
-      sidebar_sound.volume = 0f;
-    }
-    else
-    {
-      bg_adudio.UnPause();
-      audioPlayer_wl.volume = 1f;
-      audioPlayer_button.volume = 1f;
-      audioPlayer_spin_stop.volume = 1f;
-      sidebar_sound.volume = 1f;
+      if (source == null) continue;
+      if (forceMute)
+      {
+        preFocusMuteState[source] = source.mute;
+        source.mute = true;
+      }
+      else
+      {
+        source.mute = preFocusMuteState.TryGetValue(source, out bool prevMuted) ? prevMuted : source.mute;
+      }
     }
   }
 

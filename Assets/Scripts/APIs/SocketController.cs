@@ -46,6 +46,15 @@ public class SocketController : MonoBehaviour
   private const int MaxMissedPongs = 5;
   private Coroutine PingRoutine; //Back2 end
 
+  private bool hasFocus = true;
+  private float focusLostTime = 0f;
+  private Coroutine focusCheckRoutine;
+  private float maxBackgroundTime = 60f;
+  private bool isExiting = false;
+  private bool isBeingDestroyed = false;
+
+  internal Action<double> OnBalanceSync;
+
   void CloseGame()
   {
     Debug.Log("Unity: Closing Game");
@@ -141,6 +150,7 @@ public class SocketController : MonoBehaviour
     gameSocket.On<string>("internalError", OnSocketError);
     gameSocket.On<string>("alert", OnSocketAlert);
     gameSocket.On<string>("AnotherDevice", OnSocketOtherDevice);
+    gameSocket.On<string>("balance:sync", OnBalanceSyncEvent);
 
     manager.Open();
   }
@@ -191,12 +201,9 @@ public class SocketController : MonoBehaviour
 
   private void OnPongReceived(string data) //Back2 Start
   {
-    Debug.Log("✅ Received pong from server.");
     waitingForPong = false;
     missedPongs = 0;
     lastPongTime = Time.time;
-    Debug.Log($"⏱️ Updated last pong time: {lastPongTime}");
-    Debug.Log($"📦 Pong payload: {data}");
   } //Back2 end
 
   private void OnError(Error err)
@@ -242,8 +249,6 @@ public class SocketController : MonoBehaviour
   {
     while (true)
     {
-      Debug.Log($"🟡 PingCheck | waitingForPong: {waitingForPong}, missedPongs: {missedPongs}, timeSinceLastPong: {Time.time - lastPongTime}");
-
       if (missedPongs == 0)
       {
         uiManager.CheckAndClosePopups();
@@ -271,14 +276,75 @@ public class SocketController : MonoBehaviour
       // Send next ping
       waitingForPong = true;
       lastPongTime = Time.time;
-      Debug.Log("📤 Sending ping...");
       SendData("ping");
       yield return new WaitForSeconds(pingInterval);
     }
   } //Back2 end
 
+  internal void HandleFocusChange(bool focus)
+  {
+    hasFocus = focus;
+
+    if (!focus)
+    {
+      focusLostTime = Time.time;
+      if (focusCheckRoutine == null && !isExiting && !isBeingDestroyed)
+        focusCheckRoutine = StartCoroutine(FocusTimeoutCheck());
+    }
+    else
+    {
+      if (focusCheckRoutine != null)
+      {
+        StopCoroutine(focusCheckRoutine);
+        focusCheckRoutine = null;
+      }
+    }
+  }
+
+  private IEnumerator FocusTimeoutCheck()
+  {
+    while (!hasFocus && !isExiting && !isBeingDestroyed)
+    {
+      if (Time.time - focusLostTime >= maxBackgroundTime)
+      {
+        Debug.LogWarning("[SOCKET] Background timeout — closing connection");
+        isConnected = false;
+        ResetPingRoutine();
+
+        if (manager != null)
+        {
+          try { manager.Close(); }
+          catch (Exception e) { Debug.LogWarning($"[SOCKET] Focus close error: {e.Message}"); }
+        }
+
+        uiManager.DisconnectionPopup();
+        focusCheckRoutine = null;
+        yield break;
+      }
+
+      yield return new WaitForSecondsRealtime(1f);
+    }
+
+    focusCheckRoutine = null;
+  }
+
+  private void OnBalanceSyncEvent(string data)
+  {
+    PlayerData syncPayload = JsonConvert.DeserializeObject<PlayerData>(data);
+    if (syncPayload == null) return;
+
+    socketModel.playerData.balance = syncPayload.balance;
+    OnBalanceSync?.Invoke(syncPayload.balance);
+  }
+
+  private void OnDestroy()
+  {
+    isBeingDestroyed = true;
+  }
+
   internal IEnumerator CloseSocket() //Back2 Start
   {
+    isExiting = true;
     RaycastBlocker.SetActive(true);
     ResetPingRoutine();
 
